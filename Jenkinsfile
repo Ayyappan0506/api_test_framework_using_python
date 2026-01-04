@@ -27,7 +27,7 @@ pipeline {
         stage('Create Virtual Environment') {
             steps {
                 sh '''
-                python -m venv ${VENV_DIR}
+                    python -m venv ${VENV_DIR}
                 '''
             }
         }
@@ -35,9 +35,9 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                . ${VENV_DIR}/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
+                    . ${VENV_DIR}/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
                 '''
             }
         }
@@ -45,8 +45,8 @@ pipeline {
         stage('Run Pytest') {
             steps {
                 sh '''
-                . ${VENV_DIR}/bin/activate
-                pytest -v
+                    . ${VENV_DIR}/bin/activate
+                    pytest -v
                 '''
             }
         }
