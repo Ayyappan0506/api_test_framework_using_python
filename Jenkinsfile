@@ -1,42 +1,66 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.11-slim'
+            args '-u root'
+        }
+    }
+
+    environment {
+        VENV_DIR = "venv"
+    }
+
     stages {
-        stage('Clone Repository') {
+
+        stage('Checkout Source') {
             steps {
-              git 'https://github.com/pgupta584/api_test_framework_using_python.git'
+                checkout scm
             }
         }
 
-        stage('Setup Python Environment') {
+        stage('Verify Python') {
             steps {
-              sh 'echo "Setup Python Environment - Already install as Plugin in Jenkins"'
+                sh 'python --version'
+            }
+        }
+
+        stage('Create Virtual Environment') {
+            steps {
+                sh '''
+                python -m venv ${VENV_DIR}
+                '''
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'python3 -m venv venv'
-                sh 'source venv/bin/activate'
-                sh 'pip3 install -r requirements.txt'
-            }
-        }
-        stage('Run Tests') {
-            steps {
-                sh 'export PATH=$PATH:/path/to/pytest'
-                sh 'pytest -m "getUser"'
+                sh '''
+                . ${VENV_DIR}/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
             }
         }
 
-        stage('Generate Allure Report') {
+        stage('Run Pytest') {
             steps {
-              sh 'echo "Generate Allure Report"'
+                sh '''
+                . ${VENV_DIR}/bin/activate
+                pytest -v
+                '''
             }
         }
+    }
 
-        stage('Publish Allure Report') {
-            steps {
-              sh 'echo "Publish Allure Report"'
-            }
+    post {
+        always {
+            echo "Pipeline finished"
+        }
+        success {
+            echo "Tests passed ✅"
+        }
+        failure {
+            echo "Tests failed ❌"
         }
     }
 }
